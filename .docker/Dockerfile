@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /root/ws_ros
 
 # Update to be your project's name
-ENV PROJECT_NAME=ros2-template
+ENV PROJECT_NAME=mobile_to_maritime
 
 COPY . src/$PROJECT_NAME
 
