@@ -1,38 +1,31 @@
-# ROS 2 Project Template
+# mobile_to_maritime
 
-Setting up a new ROS 2 project often requires a significant amount of
-preparation and boilerplate configuration, costing you valuable robot
-development time 🤖. Recognizing this, we have put together this template
-repository configured with a ROS 2 development environment, continuous
-integration, and more. This project is the result of much trial and error
-across many projects, and we hope that this helps you save some effort in
-setting up your own projects.
+mobile_to_maritime is a collection of nodes and launch files for transforming
+messages defined according the the coordinate frame conventions documented in
+[REP-105](https://ros.org/reps/rep-0105.html) to the maritime conventions
+documented in [REP-156](https://github.com/ros-infrastructure/rep/pull/398).
 
-## Features
+## Installation
 
-The main features of this template are:
+To install mobile_to_maritime, first clone this project to the `src` directory
+of your ROS workspace:
 
-- A development environment for Visual Studio Code including a [development container](https://code.visualstudio.com/docs/devcontainers/containers)
-and configurations for linting and auto-formatting your code
-- Docker images that support deployment to a variety of systems (e.g., arm64
-systems)
-- Continuous integration and deployment pipelines using GitHub Actions
-- GitHub Issue and Pull Request templates
+```bash
+git clone git@github.com:Robotic-Decision-Making-Lab/mobile_to_maritime.git
+```
 
-## Quick start
+After cloning the project, install the ROS dependencies using `rosdep`:
 
-Using this template is as easy as 1, 2, 3...
+```bash
+rosdep update && \
+rosdep install -y --from-paths src --ignore-src
+```
 
-1. Use this repository [as a template](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)
-for your project
-2. Replace all instances of "ros2-template" with your own project's name
-3. Replace the source code with your own project!
+## Quick Start
 
-Feel free to remove any unused configurations/pipelines and to adjust things as
-you see fit for your project!
+To learn more about how to use the nodes and launch files provided in this
+project, please refer to the demo launch file.
 
-## Getting help
+## License
 
-If you have questions regarding usage of this project or would like to
-contribute, please ask a question on our [Discussions](https://github.com/Robotic-Decision-Making-Lab/ros2-template/discussions)
-board!
+mobile_to_maritime is released under the MIT license.
