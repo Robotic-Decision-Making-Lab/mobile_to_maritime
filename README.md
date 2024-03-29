@@ -24,7 +24,7 @@ rosdep install -y --from-paths src --ignore-src
 ## Quick Start
 
 To learn more about how to use the nodes and launch files provided in this
-project, please refer to the demo launch file.
+project, please refer to the [demo launch file](https://github.com/Robotic-Decision-Making-Lab/mobile_to_maritime/blob/main/mobile_to_maritime/launch/demo.launch.yaml).
 
 ## License
 
