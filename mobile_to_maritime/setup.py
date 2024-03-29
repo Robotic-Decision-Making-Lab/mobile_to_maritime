@@ -18,13 +18,15 @@ setup(
     zip_safe=True,
     maintainer="Evan Palmer",
     maintainer_email="evanp922@gmail.com",
-    description="Nodes and launch files that transform ENU/FLU messages to NED/FSD messages",
+    description=(
+        "Nodes and launch files that transform ENU/FLU messages to NED/FSD messages"
+    ),
     license="MIT",
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "mobile_to_maritime_twist = mobile_to_maritime.mobile_to_maritime:main_mobile_to_maritime_twist",
-            "mobile_to_maritime_twist_stamped = mobile_to_maritime.mobile_to_maritime:main_mobile_to_maritime_twist_stamped",
+            "mobile_to_maritime_twist = mobile_to_maritime.mobile_to_maritime:main_mobile_to_maritime_twist",  # noqa
+            "mobile_to_maritime_twist_stamped = mobile_to_maritime.mobile_to_maritime:main_mobile_to_maritime_twist_stamped",  # noqa
         ],
     },
 )
