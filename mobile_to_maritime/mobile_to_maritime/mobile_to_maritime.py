@@ -24,7 +24,12 @@ from typing import Any
 import rclpy
 from geometry_msgs.msg import Twist, TwistStamped
 from rclpy.node import Node
-from rclpy.qos import qos_profile_default
+from rclpy.qos import (
+    QoSDurabilityPolicy,
+    QoSHistoryPolicy,
+    QoSProfile,
+    QoSReliabilityPolicy,
+)
 
 
 class MobileToMaritime(Node, ABC):
@@ -33,19 +38,47 @@ class MobileToMaritime(Node, ABC):
 
         self.declare_parameters("", [("in_topic", ""), ("out_topic", "")])
 
+        # Configure the QoS profile to avoid compatibility issues
+        self.declare_parameters(
+            "qos",
+            [
+                ("history", "keep_last"),
+                ("reliability", "reliable"),
+                ("durability", "volatile"),
+            ],
+        )
+        self.declare_parameters("qos", [("depth", 10)])
+
         in_topic = self.get_parameter("in_topic").get_parameter_value().string_value
         out_topic = self.get_parameter("out_topic").get_parameter_value().string_value
 
+        # Get the QoS profile settings
+        qos_profile = self._get_qos_profile_from_params()
+
         self.in_sub = self.create_subscription(
-            message_type, in_topic, self.in_callback, qos_profile_default
+            message_type, in_topic, self.in_callback, qos_profile
         )
-        self.out_pub = self.create_publisher(
-            message_type, out_topic, qos_profile_default
+        self.out_pub = self.create_publisher(message_type, out_topic, qos_profile)
+
+    def _get_qos_profile_from_params(self) -> QoSProfile:
+        """Construct a QoS profile from the parameters."""
+        history = QoSHistoryPolicy.get_from_short_key(
+            self.get_parameter("qos.history").get_parameter_value().string_value
+        )
+        reliability = QoSReliabilityPolicy.get_from_short_key(
+            self.get_parameter("qos.reliability").get_parameter_value().string_value
+        )
+        durability = QoSDurabilityPolicy.get_from_short_key(
+            self.get_parameter("qos.durability").get_parameter_value().string_value
+        )
+        depth = self.get_parameter("qos.depth").get_parameter_value().integer_value
+
+        return QoSProfile(
+            history=history, reliability=reliability, durability=durability, depth=depth
         )
 
     @abstractmethod
-    def in_callback(self, msg: Any) -> None:
-        ...
+    def in_callback(self, msg: Any) -> None: ...
 
 
 class MaritimeToMobileStamped(MobileToMaritime):

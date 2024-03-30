@@ -8,6 +8,11 @@ launch:
           value: /cmd_vel
         - name: out_topic
           value: /cmd_vel_fsd
+        # Set the QoS profile to ensure that the subscriber is compatible with the publisher
+        - name: qos.reliability
+          value: system_default
+        - name: qos.durability
+          value: system_default
 
   - executable:
       cmd: "ros2 topic pub /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 1.0, y: 1.0, z: 1.0}, angular: {x: 0.0, y: 1.0, z: 1.0}}'"
