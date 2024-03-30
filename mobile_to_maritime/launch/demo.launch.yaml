@@ -8,10 +8,9 @@ launch:
           value: /cmd_vel
         - name: out_topic
           value: /cmd_vel_fsd
-        # Set the QoS profile to ensure that the subscriber is compatible with the publisher
-        - name: qos.reliability
-          value: system_default
-        - name: qos.durability
+        - name: qos_reliability
+          value: best_effort
+        - name: qos_durability
           value: system_default
 
   - executable:

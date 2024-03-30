@@ -40,14 +40,14 @@ class MobileToMaritime(Node, ABC):
 
         # Configure the QoS profile to avoid compatibility issues
         self.declare_parameters(
-            "qos",
+            "",
             [
-                ("history", "keep_last"),
-                ("reliability", "reliable"),
-                ("durability", "volatile"),
+                ("qos_history", "keep_last"),
+                ("qos_reliability", "reliable"),
+                ("qos_durability", "volatile"),
             ],
         )
-        self.declare_parameters("qos", [("depth", 10)])
+        self.declare_parameters("", [("qos_depth", 10)])
 
         in_topic = self.get_parameter("in_topic").get_parameter_value().string_value
         out_topic = self.get_parameter("out_topic").get_parameter_value().string_value
@@ -63,22 +63,23 @@ class MobileToMaritime(Node, ABC):
     def _get_qos_profile_from_params(self) -> QoSProfile:
         """Construct a QoS profile from the parameters."""
         history = QoSHistoryPolicy.get_from_short_key(
-            self.get_parameter("qos.history").get_parameter_value().string_value
+            self.get_parameter("qos_history").get_parameter_value().string_value
         )
         reliability = QoSReliabilityPolicy.get_from_short_key(
-            self.get_parameter("qos.reliability").get_parameter_value().string_value
+            self.get_parameter("qos_reliability").get_parameter_value().string_value
         )
         durability = QoSDurabilityPolicy.get_from_short_key(
-            self.get_parameter("qos.durability").get_parameter_value().string_value
+            self.get_parameter("qos_durability").get_parameter_value().string_value
         )
-        depth = self.get_parameter("qos.depth").get_parameter_value().integer_value
+        depth = self.get_parameter("qos_depth").get_parameter_value().integer_value
 
         return QoSProfile(
             history=history, reliability=reliability, durability=durability, depth=depth
         )
 
     @abstractmethod
-    def in_callback(self, msg: Any) -> None: ...
+    def in_callback(self, msg: Any) -> None:
+        ...
 
 
 class MaritimeToMobileStamped(MobileToMaritime):
