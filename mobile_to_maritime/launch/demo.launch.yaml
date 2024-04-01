@@ -33,7 +33,7 @@ launch:
 
   - node:
       pkg: mobile_to_maritime
-      exec: mobile_twist_stamped_to_maritime_twist_stamped
+      exec: mobile_twist_stamped_to_maritime_twist
       name: convert_twist_stamped_demo
       param:
         - name: in_topic

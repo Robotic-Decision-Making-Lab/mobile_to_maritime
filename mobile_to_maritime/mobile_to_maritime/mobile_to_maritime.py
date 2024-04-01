@@ -33,7 +33,9 @@ from rclpy.qos import (
 
 
 class MobileToMaritime(Node, ABC):
-    def __init__(self, message_type: Any, node_name: str) -> None:
+    def __init__(
+        self, in_message_type: Any, node_name: str, out_message_type: Any | None = None
+    ) -> None:
         super().__init__(node_name)
 
         self.declare_parameters("", [("in_topic", ""), ("out_topic", "")])
@@ -49,22 +51,20 @@ class MobileToMaritime(Node, ABC):
         )
         self.declare_parameters("", [("qos_depth", 10)])
 
-        self.in_topic = (
-            self.get_parameter("in_topic").get_parameter_value().string_value
-        )
-        self.out_topic = (
-            self.get_parameter("out_topic").get_parameter_value().string_value
-        )
+        in_topic = self.get_parameter("in_topic").get_parameter_value().string_value
+        out_topic = self.get_parameter("out_topic").get_parameter_value().string_value
 
         # Get the QoS profile settings
-        self.qos_profile = self._get_qos_profile_from_params()
+        qos_profile = self._get_qos_profile_from_params()
 
         self.in_sub = self.create_subscription(
-            message_type, self.in_topic, self.in_callback, self.qos_profile
+            in_message_type, in_topic, self.in_callback, qos_profile
         )
-        self.out_pub = self.create_publisher(
-            message_type, self.out_topic, self.qos_profile
-        )
+
+        if out_message_type is None:
+            out_message_type = in_message_type
+
+        self.out_pub = self.create_publisher(out_message_type, out_topic, qos_profile)
 
     def _get_qos_profile_from_params(self) -> QoSProfile:
         """Construct a QoS profile from the parameters."""
@@ -142,10 +142,11 @@ class MobileTwistStampedToMaritimeTwistStamped(MaritimeStampedToMobileStamped):
 
 class MobileTwistStampedToMaritimeTwist(MobileToMaritime):
     def __init__(self) -> None:
-        super().__init__(TwistStamped, "mobile_twist_stamped_to_maritime_twist")
-
-        # Override the parent publisher to use a twist message (without the header)
-        self.out_pub = self.create_publisher(Twist, self.out_topic, self.qos_profile)
+        super().__init__(
+            TwistStamped,
+            "mobile_twist_stamped_to_maritime_twist",
+            out_message_type=Twist,
+        )
 
     def in_callback(self, msg: TwistStamped) -> None:
         maritime_twist = Twist()
