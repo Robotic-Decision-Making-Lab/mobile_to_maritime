@@ -78,11 +78,10 @@ class MobileToMaritime(Node, ABC):
         )
 
     @abstractmethod
-    def in_callback(self, msg: Any) -> None:
-        ...
+    def in_callback(self, msg: Any) -> None: ...
 
 
-class MaritimeToMobileStamped(MobileToMaritime):
+class MaritimeStampedToMobileStamped(MobileToMaritime):
     def __init__(self, message_type: Any, node_name: str) -> None:
         super().__init__(message_type, node_name)
 
@@ -96,9 +95,9 @@ class MaritimeToMobileStamped(MobileToMaritime):
         )
 
 
-class MobileToMaritimeTwist(MobileToMaritime):
+class MobileTwistToMaritimeTwist(MobileToMaritime):
     def __init__(self) -> None:
-        super().__init__(Twist, "mobile_to_maritime_twist")
+        super().__init__(Twist, "mobile_twist_to_maritime_twist")
 
     def in_callback(self, msg: Twist) -> None:
         maritime_twist = Twist()
@@ -114,9 +113,9 @@ class MobileToMaritimeTwist(MobileToMaritime):
         self.out_pub.publish(maritime_twist)
 
 
-class MobileToMaritimeTwistStamped(MaritimeToMobileStamped):
+class MobileTwistStampedToMaritimeTwistStamped(MaritimeStampedToMobileStamped):
     def __init__(self) -> None:
-        super().__init__(TwistStamped, "mobile_to_maritime_twist_stamped")
+        super().__init__(TwistStamped, "mobile_twist_stamped_to_maritime_twist_stamped")
 
     def in_callback(self, msg: TwistStamped) -> None:
         maritime_twist = TwistStamped()
@@ -135,20 +134,48 @@ class MobileToMaritimeTwistStamped(MaritimeToMobileStamped):
         self.out_pub.publish(maritime_twist)
 
 
-def main_mobile_to_maritime_twist(args: list[str] | None = None):
+class MobileTwistStampedToMaritimeTwist(MobileToMaritime):
+    def __init__(self) -> None:
+        super().__init__(TwistStamped, "mobile_twist_stamped_to_maritime_twist")
+
+    def in_callback(self, msg: TwistStamped) -> None:
+        maritime_twist = Twist()
+
+        maritime_twist.linear.x = msg.twist.linear.x
+        maritime_twist.linear.y = -msg.twist.linear.y
+        maritime_twist.linear.z = -msg.twist.linear.z
+
+        maritime_twist.angular.x = msg.twist.angular.x
+        maritime_twist.angular.y = -msg.twist.angular.y
+        maritime_twist.angular.z = -msg.twist.angular.z
+
+        self.out_pub.publish(maritime_twist)
+
+
+def main_mobile_twist_to_maritime_twist(args: list[str] | None = None):
     rclpy.init(args=args)
 
-    node = MobileToMaritimeTwist()
+    node = MobileTwistToMaritimeTwist()
     rclpy.spin(node)
 
     node.destroy_node()
     rclpy.shutdown()
 
 
-def main_mobile_to_maritime_twist_stamped(args: list[str] | None = None):
+def main_mobile_twist_stamped_to_maritime_twist_stamped(args: list[str] | None = None):
     rclpy.init(args=args)
 
-    node = MobileToMaritimeTwistStamped()
+    node = MobileTwistStampedToMaritimeTwistStamped()
+    rclpy.spin(node)
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+
+def main_mobile_twist_stamped_to_maritime_twist(args: list[str] | None = None):
+    rclpy.init(args=args)
+
+    node = MobileTwistStampedToMaritimeTwist()
     rclpy.spin(node)
 
     node.destroy_node()

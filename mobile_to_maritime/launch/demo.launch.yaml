@@ -1,7 +1,7 @@
 launch:
   - node:
       pkg: mobile_to_maritime
-      exec: mobile_to_maritime_twist
+      exec: mobile_twist_to_maritime_twist
       name: convert_twist_demo
       param:
         - name: in_topic
@@ -18,7 +18,7 @@ launch:
 
   - node:
       pkg: mobile_to_maritime
-      exec: mobile_to_maritime_twist_stamped
+      exec: mobile_twist_stamped_to_maritime_twist_stamped
       name: convert_twist_stamped_demo
       param:
         - name: in_topic

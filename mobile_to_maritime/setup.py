@@ -25,8 +25,9 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "mobile_to_maritime_twist = mobile_to_maritime.mobile_to_maritime:main_mobile_to_maritime_twist",  # noqa
-            "mobile_to_maritime_twist_stamped = mobile_to_maritime.mobile_to_maritime:main_mobile_to_maritime_twist_stamped",  # noqa
+            "mobile_twist_to_maritime_twist = mobile_to_maritime.mobile_to_maritime:main_mobile_twist_to_maritime_twist",  # noqa
+            "mobile_twist_stamped_to_maritime_twist_stamped = mobile_to_maritime.mobile_to_maritime:main_mobile_twist_stamped_to_maritime_twist_stamped",  # noqa
+            "mobile_twist_stamped_to_maritime_twist = mobile_to_maritime.mobile_to_maritime:main_mobile_twist_stamped_to_maritime_twist",  # noqa
         ],
     },
 )
