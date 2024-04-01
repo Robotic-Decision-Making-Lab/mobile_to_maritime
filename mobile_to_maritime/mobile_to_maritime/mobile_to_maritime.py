@@ -49,16 +49,22 @@ class MobileToMaritime(Node, ABC):
         )
         self.declare_parameters("", [("qos_depth", 10)])
 
-        in_topic = self.get_parameter("in_topic").get_parameter_value().string_value
-        out_topic = self.get_parameter("out_topic").get_parameter_value().string_value
+        self.in_topic = (
+            self.get_parameter("in_topic").get_parameter_value().string_value
+        )
+        self.out_topic = (
+            self.get_parameter("out_topic").get_parameter_value().string_value
+        )
 
         # Get the QoS profile settings
-        qos_profile = self._get_qos_profile_from_params()
+        self.qos_profile = self._get_qos_profile_from_params()
 
         self.in_sub = self.create_subscription(
-            message_type, in_topic, self.in_callback, qos_profile
+            message_type, self.in_topic, self.in_callback, self.qos_profile
         )
-        self.out_pub = self.create_publisher(message_type, out_topic, qos_profile)
+        self.out_pub = self.create_publisher(
+            message_type, self.out_topic, self.qos_profile
+        )
 
     def _get_qos_profile_from_params(self) -> QoSProfile:
         """Construct a QoS profile from the parameters."""
@@ -117,6 +123,8 @@ class MobileTwistStampedToMaritimeTwistStamped(MaritimeStampedToMobileStamped):
     def __init__(self) -> None:
         super().__init__(TwistStamped, "mobile_twist_stamped_to_maritime_twist_stamped")
 
+        self.out_pub = self.create_publisher
+
     def in_callback(self, msg: TwistStamped) -> None:
         maritime_twist = TwistStamped()
 
@@ -137,6 +145,9 @@ class MobileTwistStampedToMaritimeTwistStamped(MaritimeStampedToMobileStamped):
 class MobileTwistStampedToMaritimeTwist(MobileToMaritime):
     def __init__(self) -> None:
         super().__init__(TwistStamped, "mobile_twist_stamped_to_maritime_twist")
+
+        # Override the parent publisher to use a twist message (without the header)
+        self.out_pub = self.create_publisher(Twist, self.out_topic, self.qos_profile)
 
     def in_callback(self, msg: TwistStamped) -> None:
         maritime_twist = Twist()
