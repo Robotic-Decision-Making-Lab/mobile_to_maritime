@@ -123,8 +123,6 @@ class MobileTwistStampedToMaritimeTwistStamped(MaritimeStampedToMobileStamped):
     def __init__(self) -> None:
         super().__init__(TwistStamped, "mobile_twist_stamped_to_maritime_twist_stamped")
 
-        self.out_pub = self.create_publisher
-
     def in_callback(self, msg: TwistStamped) -> None:
         maritime_twist = TwistStamped()
 
