@@ -84,7 +84,8 @@ class MobileToMaritime(Node, ABC):
         )
 
     @abstractmethod
-    def in_callback(self, msg: Any) -> None: ...
+    def in_callback(self, msg: Any) -> None:
+        ...
 
 
 class MaritimeStampedToMobileStamped(MobileToMaritime):
