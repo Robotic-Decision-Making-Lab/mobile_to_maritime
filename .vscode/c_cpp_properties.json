@@ -4,14 +4,15 @@
       "name": "Linux",
       "includePath": [
         "${workspaceFolder}/**",
-        "/opt/ros/iron/include/**",
-        "/usr/include/gz/**"
+        "/opt/ros/rolling/include/**",
+        "/usr/include/eigen3/**",
+        "/home/${USER}/ws_ros/install/**"
       ],
       "defines": [],
-      "compilerPath": "/usr/bin/gcc",
+      "compilerPath": "/usr/bin/clang",
       "cStandard": "c99",
       "cppStandard": "c++20",
-      "intelliSenseMode": "linux-gcc-x64"
+      "intelliSenseMode": "linux-clang-x64"
     }
   ],
   "version": 4

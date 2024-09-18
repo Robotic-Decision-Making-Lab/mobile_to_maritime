@@ -1,0 +1,14 @@
+message_transforms:
+  incoming_topics:
+    type: string_array
+    description: "Specifies the topics to which the message transforms should be applied."
+
+  outgoing_messages:
+    __map_incoming_topics:
+      outgoing_topic:
+        type: string
+        description: "Specifies the topic to which the respective transformed message should be sent."
+
+      outgoing_frame:
+        type: string
+        description: "Specifies the frame_id of the outgoing message."
