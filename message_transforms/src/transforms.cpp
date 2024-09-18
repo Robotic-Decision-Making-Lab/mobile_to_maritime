@@ -21,101 +21,67 @@
 #include "message_transforms/transforms.hpp"
 
 #include "rclcpp/rclcpp.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 namespace m2m::transforms
 {
 
-MessageTransforms::MessageTransforms(const rclcpp::NodeOptions & options)
-: rclcpp_lifecycle::LifecycleNode("message_transforms", options)
+auto transform_message(geometry_msgs::msg::Pose & m) -> void
 {
+  const KDL::Vector v(m.position.x, m.position.y, m.position.z);
+  const KDL::Rotation r = KDL::Rotation::Quaternion(m.orientation.x, m.orientation.y, m.orientation.z, m.orientation.w);
+
+  // The transformation is a rotation about the x-axis by 180 degrees
+  const KDL::Frame transform(KDL::Rotation::Quaternion(1, 0, 0, 0), KDL::Vector(0, 0, 0));
+  const KDL::Frame v_out = transform * KDL::Frame(r, v);
+
+  m.position.x = v_out.p.x();
+  m.position.y = v_out.p.y();
+  m.position.z = v_out.p.z();
+  v_out.M.GetQuaternion(m.orientation.x, m.orientation.y, m.orientation.z, m.orientation.w);
 }
 
-auto MessageTransforms::on_configure(const rclcpp_lifecycle::State & /*state*/) -> CallbackReturn
+auto transform_message(geometry_msgs::msg::Twist & m) -> void
 {
-  try {
-    param_listener_ = std::make_shared<message_transforms::ParamListener>(get_node_parameters_interface());
-    params_ = param_listener_->get_params();
-  }
-  catch (const std::exception & e) {
-    RCLCPP_ERROR(get_logger(), "Failed to get MessageTransforms parameters: %s", e.what());
-    return CallbackReturn::ERROR;
-  }
-
-  for (const auto & topic : params_.incoming_topics) {
-    std::vector<rclcpp::TopicEndpointInfo> info = get_publishers_info_by_topic(topic);
-
-    // Filter the endpoints to include only publishers from other nodes
-    const auto endpoint_it = std::ranges::find_if(info, [this](const auto & endpoint) {
-      return endpoint.endpoint_type() == rclcpp::EndpointType::Publisher &&
-             (endpoint.node_name() != get_name() || endpoint.node_namespace() != get_namespace());
-    });
-
-    if (endpoint_it == info.end()) {
-      RCLCPP_WARN(get_logger(), "No publishers found for topic %s", topic.c_str());
-    }
-
-    auto qos = endpoint_it == info.end() ? rclcpp::SystemDefaultsQoS() : endpoint_it->qos_profile();
-
-    // The history policy can be set to unknown when the QoS profile is copied. See the following for more
-    // information:
-    // https://github.com/foxglove/ros-foxglove-bridge/blob/26d5fac4d11b34edc583ff63236910c94f4416e7/ros2_foxglove_bridge/src/ros2_foxglove_bridge.cpp#L657
-    if (qos.history() == rclcpp::HistoryPolicy::Unknown) {
-      qos.history(rclcpp::HistoryPolicy::SystemDefault);
-    }
-
-    const std::string message_type = params_.transforms.incoming_topics_map[topic].message_type;
-
-    if (subscription_map_.find(message_type) == subscription_map_.end()) {
-      RCLCPP_WARN(get_logger(), "Unsupported message type %s for topic %s", message_type.c_str(), topic.c_str());
-    } else {
-      subscription_map_[message_type](topic, params_.transforms.incoming_topics_map[topic].outgoing_topics, qos);
-    }
-  }
-
-  return CallbackReturn::SUCCESS;
+  m.linear.y *= -1;
+  m.linear.z *= -1;
+  m.angular.y *= -1;
+  m.angular.z *= -1;
 }
 
-auto MessageTransforms::transform_message(const std::shared_ptr<geometry_msgs::msg::Pose> & message) -> void
+auto transform_message(geometry_msgs::msg::Wrench & m) -> void
 {
-  message->position.y *= -1;
-  message->position.z *= -1;
-
-  // TODO(evan): rotation the pose
+  m.force.y *= -1;
+  m.force.z *= -1;
+  m.torque.y *= -1;
+  m.torque.z *= -1;
 }
 
-auto MessageTransforms::transform_message(const std::shared_ptr<geometry_msgs::msg::Twist> & message) -> void
+auto transform_message(geometry_msgs::msg::PoseStamped & m, const std::string & frame_id) -> void
 {
-  message->linear.y *= -1;
-  message->linear.z *= -1;
-
-  message->angular.x *= -1;
-  message->angular.y *= -1;
+  m.header.frame_id = frame_id;
+  transform_message(m.pose);
 }
 
-auto MessageTransforms::transform_message(const std::shared_ptr<geometry_msgs::msg::Wrench> & message) -> void {}
+auto transform_message(geometry_msgs::msg::TwistStamped & m, const std::string & frame_id) -> void
+{
+  m.header.frame_id = frame_id;
+  transform_message(m.twist);
+}
 
-auto MessageTransforms::transform_message(const std::shared_ptr<geometry_msgs::msg::PoseStamped> & message) -> void {}
+auto transform_message(geometry_msgs::msg::WrenchStamped & m, const std::string & frame_id) -> void
+{
+  m.header.frame_id = frame_id;
+  transform_message(m.wrench);
+}
 
-auto MessageTransforms::transform_message(const std::shared_ptr<geometry_msgs::msg::TwistStamped> & message) -> void {}
-
-auto MessageTransforms::transform_message(const std::shared_ptr<geometry_msgs::msg::WrenchStamped> & message) -> void {}
-
-auto MessageTransforms::transform_message(const std::shared_ptr<nav_msgs::msg::Odometry> & message) -> void {}
+auto transform_message(nav_msgs::msg::Odometry & m, const std::string & frame_id, const std::string & child_frame_id)
+  -> void
+{
+  m.header.frame_id = frame_id;
+  m.child_frame_id = child_frame_id;
+  transform_message(m.pose.pose);
+  transform_message(m.twist.twist);
+}
 
 }  // namespace m2m::transforms
-
-auto main(int argc, char * argv[]) -> int
-{
-  rclcpp::init(argc, argv);
-
-  rclcpp::executors::MultiThreadedExecutor executor;
-
-  auto node = std::make_shared<m2m::transforms::MessageTransforms>();
-  executor.add_node(node->get_node_base_interface());
-
-  executor.spin();
-
-  rclcpp::shutdown();
-
-  return 0;
-}

@@ -13,6 +13,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     geometry_msgs
     nav_msgs
     rclcpp_components
+    tf2_geometry_msgs
 )
 
 foreach(pkg IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -30,11 +31,12 @@ add_library(message_transforms_library SHARED)
 
 target_sources(
     message_transforms_library
-    PRIVATE src/transforms.cpp
+    PRIVATE src/message_transforms_node.cpp src/transforms.cpp
     PUBLIC
         FILE_SET HEADERS
         BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
         FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/include/message_transforms/message_transforms_node.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/include/message_transforms/transforms.hpp
 )
 target_link_libraries(
@@ -45,8 +47,8 @@ ament_target_dependencies(message_transforms_library PUBLIC ${THIS_PACKAGE_INCLU
 target_compile_features(message_transforms_library PUBLIC cxx_std_20)
 
 rclcpp_components_register_node(message_transforms_library
-    PLUGIN "m2m::transforms::MessageTransform"
-    EXECUTABLE message_transform
+    PLUGIN "m2m::MessageTransforms"
+    EXECUTABLE message_transforms
 )
 
 install(
@@ -58,7 +60,7 @@ install(
     FILE_SET HEADERS
 )
 
-# install(DIRECTORY config launch DESTINATION share/message_transform)
+install(DIRECTORY launch DESTINATION share/message_transforms)
 
 ament_export_targets(export_message_transforms_library HAS_LIBRARY_TARGET)
 ament_export_dependencies($THIS_PACKAGE_INCLUDE_DEPENDS)

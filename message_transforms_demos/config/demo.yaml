@@ -1,0 +1,26 @@
+message_transforms:
+  ros__parameters:
+    # Provide a list of incoming topics to which the message transforms should
+    # be applied. The messages published on the topic should be of a supported
+    # type.
+    incoming_topics:
+      - /my_robot/pose
+      - /my_robot/pose_stamped_fsd
+
+    # Define the relevant configurations for each incoming topic, including
+    # the outgoing topic, message type, and frame_id (if applicable), and
+    # child_frame_id (if applicable).
+    transforms:
+
+      # We can transform a message defined using REP-105 (mobile) to REP-156
+      # (maritime)
+      /my_robot/pose:
+        outgoing_topic: /my_robot/pose_fsd
+        message_type: geometry_msgs/msg/Pose
+
+      # We can also transform a message defined using REP-156 (maritime) back
+      # to REP-105 (mobile)
+      /my_robot/pose_stamped_fsd:
+        outgoing_topic: /my_robot/pose_stamped
+        message_type: geometry_msgs/msg/PoseStamped
+        frame_id: base_link

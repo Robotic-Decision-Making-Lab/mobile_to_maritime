@@ -5,9 +5,9 @@ message_transforms:
 
   transforms:
     __map_incoming_topics:
-      outgoing_topics:
-        type: string_array
-        description: Specifies the topics to which the respective transformed message should be sent.
+      outgoing_topic:
+        type: string
+        description: Specifies the topic to which the respective transformed message should be sent.
 
       message_type:
         type: string
@@ -16,3 +16,9 @@ message_transforms:
       frame_id:
         type: string
         description: Specifies the frame_id of the outgoing message.
+        default_value: ""
+
+      child_frame_id:
+        type: string
+        description: Specifies the child_frame_id of the outgoing message (e.g., used for nav_msgs/msg/Odometry).
+        default_value: ""
