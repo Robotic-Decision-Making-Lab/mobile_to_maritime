@@ -1,14 +1,18 @@
 message_transforms:
   incoming_topics:
     type: string_array
-    description: "Specifies the topics to which the message transforms should be applied."
+    description: Specifies the topics to which the message transforms should be applied.
 
-  outgoing_messages:
+  transforms:
     __map_incoming_topics:
-      outgoing_topic:
-        type: string
-        description: "Specifies the topic to which the respective transformed message should be sent."
+      outgoing_topics:
+        type: string_array
+        description: Specifies the topics to which the respective transformed message should be sent.
 
-      outgoing_frame:
+      message_type:
         type: string
-        description: "Specifies the frame_id of the outgoing message."
+        description: Specifies the namespace and name of the message type to be sent (e.g., geometry_msgs/msg/Twist)
+
+      frame_id:
+        type: string
+        description: Specifies the frame_id of the outgoing message.

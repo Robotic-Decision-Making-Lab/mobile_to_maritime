@@ -48,28 +48,85 @@ public:
 
   auto on_configure(const rclcpp_lifecycle::State & state) -> CallbackReturn override;
 
-  auto on_activate(const rclcpp_lifecycle::State & state) -> CallbackReturn override;
-
 private:
-  auto transform_message(std::shared_ptr<geometry_msgs::msg::Pose> & message) -> void;
+  /// Transform messages sent over a provided topic and publish them to multiple new topics.
+  template <typename MessageT>
+  auto register_transforms(
+    const std::string & in_topic,
+    const std::vector<std::string> & out_topics,
+    const rclcpp::QoS & qos) -> void
+  {
+    // Create a publisher for each outgoing topic
+    std::vector<std::shared_ptr<rclcpp::Publisher<MessageT>>> publishers;
+    for (const auto & out_topic : out_topics) {
+      publishers.push_back(create_publisher<MessageT>(out_topic, qos));
+    }
 
-  auto transform_message(std::shared_ptr<geometry_msgs::msg::Twist> & message) -> void;
+    // Create a subscriber for the incoming topic that will transform and publish the message to the outgoing topics
+    subscribers_.push_back(
+      create_subscription<MessageT>(in_topic, qos, [this, publishers](const std::shared_ptr<MessageT> message) {
+        transform_message(message);
+        for (const auto & pub : publishers) {
+          pub->publish(*message);
+        }
+      }));
+  }
 
-  auto transform_message(std::shared_ptr<geometry_msgs::msg::Wrench> & message) -> void;
+  // TODO(evan): Copy the message and transform it don't modify the original
 
-  auto transform_message(std::shared_ptr<geometry_msgs::msg::PoseStamped> & message) -> void;
+  auto transform_message(const std::shared_ptr<geometry_msgs::msg::Pose> & message) -> void;
 
-  auto transform_message(std::shared_ptr<geometry_msgs::msg::TwistStamped> & message) -> void;
+  auto transform_message(const std::shared_ptr<geometry_msgs::msg::Twist> & message) -> void;
 
-  auto transform_message(std::shared_ptr<geometry_msgs::msg::WrenchStamped> & message) -> void;
+  auto transform_message(const std::shared_ptr<geometry_msgs::msg::Wrench> & message) -> void;
 
-  auto transform_message(std::shared_ptr<nav_msgs::msg::Odometry> & message) -> void;
+  auto transform_message(const std::shared_ptr<geometry_msgs::msg::PoseStamped> & message) -> void;
 
-  std::vector<std::shared_ptr<rclcpp::SubscriptionBase>> subscriptions_;
-  std::vector<std::shared_ptr<rclcpp::PublisherBase>> publishers_;
+  auto transform_message(const std::shared_ptr<geometry_msgs::msg::TwistStamped> & message) -> void;
+
+  auto transform_message(const std::shared_ptr<geometry_msgs::msg::WrenchStamped> & message) -> void;
+
+  auto transform_message(const std::shared_ptr<nav_msgs::msg::Odometry> & message) -> void;
+
+  std::vector<std::shared_ptr<rclcpp::SubscriptionBase>> subscribers_;
 
   std::shared_ptr<message_transforms::ParamListener> param_listener_;
   message_transforms::Params params_;
+
+  // Keep track of the supported message transformations
+  std::unordered_map<
+    std::string,
+    std::function<void(const std::string &, const std::vector<std::string> &, const rclcpp::QoS &)>>
+    subscription_map_ = {
+      {"geometry_msgs/msg/Pose",
+       [this](const std::string & in_topic, const std::vector<std::string> & out_topics, const rclcpp::QoS & qos) {
+         register_transforms<geometry_msgs::msg::Pose>(in_topic, out_topics, qos);
+       }},
+      {"geometry_msgs/msg/Twist",
+       [this](const std::string & in_topic, const std::vector<std::string> & out_topics, const rclcpp::QoS & qos) {
+         register_transforms<geometry_msgs::msg::Twist>(in_topic, out_topics, qos);
+       }},
+      {"geometry_msgs/msg/Wrench",
+       [this](const std::string & in_topic, const std::vector<std::string> & out_topics, const rclcpp::QoS & qos) {
+         register_transforms<geometry_msgs::msg::Wrench>(in_topic, out_topics, qos);
+       }},
+      {"geometry_msgs/msg/PoseStamped",
+       [this](const std::string & in_topic, const std::vector<std::string> & out_topics, const rclcpp::QoS & qos) {
+         register_transforms<geometry_msgs::msg::PoseStamped>(in_topic, out_topics, qos);
+       }},
+      {"geometry_msgs/msg/TwistStamped",
+       [this](const std::string & in_topic, const std::vector<std::string> & out_topics, const rclcpp::QoS & qos) {
+         register_transforms<geometry_msgs::msg::TwistStamped>(in_topic, out_topics, qos);
+       }},
+      {"geometry_msgs/msg/WrenchStamped",
+       [this](const std::string & in_topic, const std::vector<std::string> & out_topics, const rclcpp::QoS & qos) {
+         register_transforms<geometry_msgs::msg::WrenchStamped>(in_topic, out_topics, qos);
+       }},
+      {"nav_msgs/msg/Odometry",
+       [this](const std::string & in_topic, const std::vector<std::string> & out_topics, const rclcpp::QoS & qos) {
+         register_transforms<nav_msgs::msg::Odometry>(in_topic, out_topics, qos);
+       }},
+    };
 };
 
 }  // namespace m2m::transforms
