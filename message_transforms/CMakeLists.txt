@@ -10,6 +10,7 @@ include(GNUInstallDirs)
 set(THIS_PACKAGE_INCLUDE_DEPENDS
     rclcpp
     rclcpp_lifecycle
+    rclcpp_components
     geometry_msgs
     nav_msgs
     rclcpp_components
