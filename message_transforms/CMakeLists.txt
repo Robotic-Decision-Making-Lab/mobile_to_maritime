@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.8)
 project(message_transforms)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -33,12 +33,12 @@ add_library(message_transforms_library SHARED)
 target_sources(
     message_transforms_library
     PRIVATE src/message_transforms_node.cpp src/transforms.cpp
+)
+target_include_directories(
+    message_transforms_library
     PUBLIC
-        FILE_SET HEADERS
-        BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/message_transforms/message_transforms_node.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/message_transforms/transforms.hpp
+        $<INSTALL_INTERFACE:include/message_transforms>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
 target_link_libraries(
     message_transforms_library
@@ -52,13 +52,14 @@ rclcpp_components_register_node(message_transforms_library
     EXECUTABLE message_transforms
 )
 
+install(DIRECTORY include/ DESTINATION include/message_transforms)
+
 install(
     TARGETS message_transforms_library message_transforms_parameters
     EXPORT export_message_transforms_library
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    FILE_SET HEADERS
 )
 
 install(DIRECTORY launch DESTINATION share/message_transforms)
