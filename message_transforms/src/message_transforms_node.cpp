@@ -58,6 +58,7 @@ auto MessageTransforms::on_configure(const rclcpp_lifecycle::State & /*state*/) 
 
   for (const auto & topic : params_.incoming_topics) {
     // Wait for up to 5 seconds for publishers to be found on the topic
+    // This gives us a chance to get the QoS profile of the publisher instead of immediately using the system defaults
     std::vector<rclcpp::TopicEndpointInfo> info;
     const std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
     do {
@@ -81,11 +82,18 @@ auto MessageTransforms::on_configure(const rclcpp_lifecycle::State & /*state*/) 
     const std::string message_type = params_.transforms.incoming_topics_map[topic].message_type;
     const std::string outgoing_topic = params_.transforms.incoming_topics_map[topic].outgoing_topic;
 
+    RCLCPP_INFO(
+      get_logger(),
+      "Transforming messages of type %s from the topic %s and republishing to the topic %s",
+      message_type.c_str(),
+      topic.c_str(),
+      outgoing_topic.c_str());
+
     // Find the relevant transform registration function and execute it
+    // We just log a warning for missing frame_ids - while the output frames will be empty, it won't break things
     if (transform_map_.find(message_type) != transform_map_.end()) {
       transform_map_[message_type](topic, outgoing_topic, qos);
     } else if (transform_stamped_map_.find(message_type) != transform_stamped_map_.end()) {
-      // Notify users of any empty frame_id values
       const std::string frame_id = params_.transforms.incoming_topics_map[topic].frame_id;
       if (frame_id.empty()) {
         RCLCPP_WARN(
@@ -94,7 +102,6 @@ auto MessageTransforms::on_configure(const rclcpp_lifecycle::State & /*state*/) 
 
       transform_stamped_map_[message_type](topic, outgoing_topic, frame_id, qos);
     } else if (transform_odometry_map_.find(message_type) != transform_odometry_map_.end()) {
-      // Notify users of any empty frame_id or child_frame_id values
       const std::string frame_id = params_.transforms.incoming_topics_map[topic].frame_id;
       if (frame_id.empty()) {
         RCLCPP_WARN(
@@ -110,6 +117,7 @@ auto MessageTransforms::on_configure(const rclcpp_lifecycle::State & /*state*/) 
       transform_odometry_map_[message_type](topic, outgoing_topic, frame_id, child_frame_id, qos);
     } else {
       RCLCPP_WARN(get_logger(), "No transform found for message type %s", message_type.c_str());
+      return CallbackReturn::ERROR;
     }
   }
 

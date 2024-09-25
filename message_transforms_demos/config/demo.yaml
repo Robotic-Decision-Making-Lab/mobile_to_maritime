@@ -1,3 +1,6 @@
+# Reminder: If you plan to launch multiple instances of the message_transforms
+# node, you must provide a unique namespace for each instance. The chosen
+# namespace should be reflected in the configuration file.
 message_transforms:
   ros__parameters:
     # Provide a list of incoming topics to which the message transforms should
