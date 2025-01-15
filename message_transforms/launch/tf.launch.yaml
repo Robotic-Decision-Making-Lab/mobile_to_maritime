@@ -1,11 +1,14 @@
 launch:
+  - arg:
+      name: prefix
+      default: ""
 
   # REP-156 Transforms
   - node:
       pkg: tf2_ros
       exec: static_transform_publisher
       name: base_link_to_base_link_fsd
-      args: --roll 3.1421593 --frame-id base_link --child-frame-id base_link_fsd
+      args: --roll 3.1421593 --frame-id $(var prefix)base_link --child-frame-id $(var prefix)base_link_fsd
 
   - node:
       pkg: tf2_ros
