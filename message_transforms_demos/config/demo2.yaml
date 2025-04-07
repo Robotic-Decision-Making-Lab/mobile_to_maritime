@@ -1,0 +1,18 @@
+# Reminder: If you plan to launch multiple instances of the message_transforms
+# node, you must provide a unique namespace for each instance. The chosen
+# namespace should be reflected in the configuration file.
+message_transforms:
+  ros__parameters:
+
+    incoming_topics:
+      - /my_robot/odom
+
+    transforms:
+      /my_robot/odom:
+        outgoing_topic: /my_robot/odom_fsd
+        message_type: nav_msgs/msg/Odometry
+
+        # The frame_id and child_frame_id are used to define the coordinate
+        # frames for the outgoing message.
+        frame_id: map_fsd
+        child_frame_id: base_link_fsd
