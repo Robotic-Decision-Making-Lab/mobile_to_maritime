@@ -1,0 +1,14 @@
+launch:
+
+  - arg:
+      name: params_file
+      default: $(find-pkg-share message_transforms_demos)/config/demo2.yaml
+
+  - executable:
+      cmd: "ros2 topic pub /my_robot/odom nav_msgs/msg/Odometry '{header: {stamp: {sec: 0, nanosec: 0}, frame_id: 'map'}, child_frame_id: 'base_link', pose: {pose: {position: {x: 1.0, y: 1.0, z: 1.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}, twist: {twist: {linear: {x: 1.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}}}'"
+
+  - include:
+      file: $(find-pkg-share message_transforms)/launch/message_transforms.launch.py
+      arg:
+        - name: parameters_file
+          value: $(var params_file)

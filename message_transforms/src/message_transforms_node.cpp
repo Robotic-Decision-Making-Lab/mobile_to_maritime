@@ -34,25 +34,17 @@ MessageTransforms::MessageTransforms(const rclcpp::NodeOptions & options)
 
 auto MessageTransforms::on_configure(const rclcpp_lifecycle::State & /*state*/) -> CallbackReturn
 {
-  try {
-    param_listener_ = std::make_shared<message_transforms::ParamListener>(get_node_parameters_interface());
-    params_ = param_listener_->get_params();
-  }
-  catch (const std::exception & e) {
-    RCLCPP_ERROR(get_logger(), "Failed to get MessageTransforms parameters: %s", e.what());  // NOLINT
-    return CallbackReturn::ERROR;
-  }
+  param_listener_ = std::make_shared<message_transforms::ParamListener>(get_node_parameters_interface());
+  params_ = param_listener_->get_params();
 
   // Lambda used to filter the endpoints to include only publishers from other nodes
   auto get_publisher_endpoints = [this](const std::string & topic) -> std::vector<rclcpp::TopicEndpointInfo> {
     std::vector<rclcpp::TopicEndpointInfo> info = get_publishers_info_by_topic(topic);
-
     auto is_publisher = [this](const rclcpp::TopicEndpointInfo & endpoint) {
       return endpoint.endpoint_type() == rclcpp::EndpointType::Publisher &&
              (endpoint.node_name() != get_name() || endpoint.node_namespace() != get_namespace());
     };
     auto filtered_endpoints = info | std::views::filter(is_publisher);
-
     return {filtered_endpoints.begin(), filtered_endpoints.end()};
   };
 
@@ -89,32 +81,24 @@ auto MessageTransforms::on_configure(const rclcpp_lifecycle::State & /*state*/) 
       topic.c_str(),
       outgoing_topic.c_str());
 
+    const std::string frame_id = params_.transforms.incoming_topics_map[topic].frame_id;
+    const std::string child_frame_id = params_.transforms.incoming_topics_map[topic].child_frame_id;
+
+    if (frame_id.empty()) {
+      RCLCPP_DEBUG(get_logger(), "No frame_id configured for topic %s", topic.c_str());
+    }
+    if (child_frame_id.empty()) {
+      RCLCPP_DEBUG(get_logger(), "No child_frame_id configured for topic %s", topic.c_str());
+    }
+
     // Find the relevant transform registration function and execute it
     // We just log a warning for missing frame_ids - while the output frames will be empty, it won't break things
     if (transform_map_.find(message_type) != transform_map_.end()) {
       transform_map_[message_type](topic, outgoing_topic, qos);
     } else if (transform_stamped_map_.find(message_type) != transform_stamped_map_.end()) {
-      const std::string frame_id = params_.transforms.incoming_topics_map[topic].frame_id;
-      if (frame_id.empty()) {
-        RCLCPP_WARN(
-          get_logger(), "No frame_id found for message type %s on topic %s", message_type.c_str(), topic.c_str());
-      }
-
       transform_stamped_map_[message_type](topic, outgoing_topic, frame_id, qos);
-    } else if (transform_odometry_map_.find(message_type) != transform_odometry_map_.end()) {
-      const std::string frame_id = params_.transforms.incoming_topics_map[topic].frame_id;
-      if (frame_id.empty()) {
-        RCLCPP_WARN(
-          get_logger(), "No frame_id found for message type %s on topic %s", message_type.c_str(), topic.c_str());
-      }
-
-      const std::string child_frame_id = params_.transforms.incoming_topics_map[topic].child_frame_id;
-      if (child_frame_id.empty()) {
-        RCLCPP_WARN(
-          get_logger(), "No child_frame_id found for message type %s on topic %s", message_type.c_str(), topic.c_str());
-      }
-
-      transform_odometry_map_[message_type](topic, outgoing_topic, frame_id, child_frame_id, qos);
+    } else if (transform_stamped_child_map_.find(message_type) != transform_stamped_child_map_.end()) {
+      transform_stamped_child_map_[message_type](topic, outgoing_topic, frame_id, child_frame_id, qos);
     } else {
       RCLCPP_WARN(get_logger(), "No transform found for message type %s", message_type.c_str());
       return CallbackReturn::ERROR;
@@ -129,15 +113,10 @@ auto MessageTransforms::on_configure(const rclcpp_lifecycle::State & /*state*/) 
 auto main(int argc, char * argv[]) -> int
 {
   rclcpp::init(argc, argv);
-
   rclcpp::executors::MultiThreadedExecutor executor;
-
   auto node = std::make_shared<m2m::MessageTransforms>();
   executor.add_node(node->get_node_base_interface());
-
   executor.spin();
-
   rclcpp::shutdown();
-
   return 0;
 }
