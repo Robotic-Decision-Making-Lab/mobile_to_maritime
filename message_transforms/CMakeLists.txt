@@ -65,6 +65,6 @@ install(
 install(DIRECTORY launch DESTINATION share/message_transforms)
 
 ament_export_targets(export_message_transforms_library HAS_LIBRARY_TARGET)
-ament_export_dependencies($THIS_PACKAGE_INCLUDE_DEPENDS)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 ament_package()
