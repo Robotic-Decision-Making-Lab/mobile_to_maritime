@@ -34,7 +34,7 @@ namespace m2m
 class MessageTransforms : public rclcpp::Node
 {
 public:
-  MessageTransforms(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit MessageTransforms(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
 private:
   /// Transform incoming messages and re-publish on a given topic.
