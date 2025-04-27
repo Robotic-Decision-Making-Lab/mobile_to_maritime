@@ -1,9 +1,5 @@
 launch:
   - arg:
-      name: ns
-      default: ""
-
-  - arg:
       name: parameters_file
       default: ""
 
