@@ -1,0 +1,10 @@
+launch:
+  - arg:
+      name: parameters_file
+      default: ""
+
+  - node:
+      pkg: message_transforms
+      exec: message_transforms_node
+      param:
+        - from: $(var parameters_file)

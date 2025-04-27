@@ -30,7 +30,7 @@
 #include "geometry_msgs/msg/wrench_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 
-namespace m2m::transforms
+namespace m2m
 {
 
 auto transform_message(geometry_msgs::msg::Pose & m) -> void;
@@ -48,4 +48,4 @@ auto transform_message(geometry_msgs::msg::WrenchStamped & m, const std::string 
 auto transform_message(nav_msgs::msg::Odometry & m, const std::string & frame_id, const std::string & child_frame_id)
   -> void;
 
-}  // namespace m2m::transforms
+}  // namespace m2m

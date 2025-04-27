@@ -23,7 +23,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
-namespace m2m::transforms
+namespace m2m
 {
 
 auto transform_message(geometry_msgs::msg::Pose & m) -> void
@@ -84,4 +84,4 @@ auto transform_message(nav_msgs::msg::Odometry & m, const std::string & frame_id
   transform_message(m.twist.twist);
 }
 
-}  // namespace m2m::transforms
+}  // namespace m2m
