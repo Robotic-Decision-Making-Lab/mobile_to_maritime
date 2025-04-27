@@ -29,7 +29,7 @@ target_link_libraries(
     message_transforms
     PUBLIC
         rclcpp::rclcpp
-        ${tf2_geometry_msgs_TARGETS}
+        tf2_geometry_msgs::tf2_geometry_msgs
         ${geometry_msgs_TARGETS}
         ${nav_msgs_TARGETS}
 )
@@ -66,6 +66,6 @@ install(
 install(DIRECTORY launch DESTINATION share/message_transforms)
 
 ament_export_targets(export_message_transforms HAS_LIBRARY_TARGET)
-ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_export_dependencies(rclcpp geometry_msgs nav_msgs tf2_geometry_msgs)
 
 ament_package()
