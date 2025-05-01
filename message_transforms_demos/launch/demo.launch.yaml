@@ -15,5 +15,7 @@ launch:
   - include:
       file: $(find-pkg-share message_transforms)/launch/message_transforms.launch.yaml
       arg:
+        - name: ns
+          value: my_namespace
         - name: parameters_file
           value: $(var params_file)

@@ -1,10 +1,15 @@
 launch:
   - arg:
+      name: ns
+      default: ""
+
+  - arg:
       name: parameters_file
       default: ""
 
   - node:
       pkg: message_transforms
       exec: message_transforms_node
+      namespace: $(var ns)
       param:
         - from: $(var parameters_file)
