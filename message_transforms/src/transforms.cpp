@@ -35,7 +35,7 @@ auto transform_message(geometry_msgs::msg::Pose & m) -> void
   // about the x-axis by 180 degrees
   const KDL::Frame map_transform(KDL::Rotation(0, 1, 0, 1, 0, 0, 0, 0, -1), KDL::Vector(0, 0, 0));
 
-  // Body Transform (FLU to FRD): The transformation is a rotation about the local x-axis by 180 degrees
+  // Body Transform (FLU to FSD): The transformation is a rotation about the local x-axis by 180 degrees
   const KDL::Frame body_transform(KDL::Rotation::Quaternion(1, 0, 0, 0), KDL::Vector(0, 0, 0));
 
   const KDL::Frame v_out = map_transform * KDL::Frame(r, v) * body_transform;
