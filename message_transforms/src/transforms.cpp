@@ -31,9 +31,14 @@ auto transform_message(geometry_msgs::msg::Pose & m) -> void
   const KDL::Vector v(m.position.x, m.position.y, m.position.z);
   const KDL::Rotation r = KDL::Rotation::Quaternion(m.orientation.x, m.orientation.y, m.orientation.z, m.orientation.w);
 
-  // The transformation is a rotation about the x-axis by 180 degrees
-  const KDL::Frame transform(KDL::Rotation::Quaternion(1, 0, 0, 0), KDL::Vector(0, 0, 0));
-  const KDL::Frame v_out = transform * KDL::Frame(r, v);
+  // Map Transform (ENU to NED): The transformation is a rotation about the z-axis by 90 degrees, followed by a rotation
+  // about the x-axis by 180 degrees
+  const KDL::Frame map_transform(KDL::Rotation(0, 1, 0, 1, 0, 0, 0, 0, -1), KDL::Vector(0, 0, 0));
+
+  // Body Transform (FLU to FSD): The transformation is a rotation about the local x-axis by 180 degrees
+  const KDL::Frame body_transform(KDL::Rotation::Quaternion(1, 0, 0, 0), KDL::Vector(0, 0, 0));
+
+  const KDL::Frame v_out = map_transform * KDL::Frame(r, v) * body_transform;
 
   m.position.x = v_out.p.x();
   m.position.y = v_out.p.y();
